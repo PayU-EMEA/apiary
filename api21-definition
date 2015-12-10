@@ -1,0 +1,711 @@
+FORMAT: 1A
+HOST: https://secure.payu.com/
+
+# payu.2.1
+
+This document contains information about **REST API 2.1** for the PayU payment system.
+
+**Basic information**
+
+Click on the <a href="link http://static.payu.com/sites/terms/files/przewodnik_po_elementach_strony_eng.pdf"> link </a> to find out how to start cooperating with PayU.
+
+Before integrating with PayU Payment Service, make sure that Point of Sale of the type Checkout - Express Payment will be used for processing payments (you can check this in Management Panel).
+
+# Group API Endpoints
+
+##  oauth API endpoint [/pl/standard/user/oauth/authorize]
+
+
+
+### get access token [POST]
+
+The client authenticates by  OAuth standard by downloading a token, which is used in further communication with PayU servers.
+Authorization data can be found in client panel. There are two grant types client_credentials for standard integration and trusted_merchant for use with token payments.
+
++ Request
+     + Headers
+            
+            Content-Type: application/x-www-form-urlencoded
+        
+     + Body    
+
+            grant_type=client_credentials&client_id=145227&client_secret=12f071174cb7eb79d4aac5bc2f07563f
+
++ Response 200
+        
+        {"access_token":"4cc24546-7e0e-47c9-a2d0-e5358e2640ac","token_type":"bearer","refresh_token":"6e265a18-d33e-46d7-ae00-853adebbacfd","expires_in":43199,"grant_type":"clients_credentials"}
+
+
++ Request trusted merchant token
+     + Headers
+            
+            Content-Type: application/x-www-form-urlencoded
+        
+     + Body    
+
+            grant_type=trusted_merchant&client_id=145227&client_secret=12f071174cb7eb79d4aac5bc2f07563f&email=testaccount1%40devil.allegro.pl&ext_customer_id=extCustId6667
+
++ Response 200
+        
+        {"access_token":"4cc24546-7e0e-47c9-a2d0-e5358e2640ac","token_type":"bearer","refresh_token":"6e265a18-d33e-46d7-ae00-853adebbacfd","expires_in":43199,"grant_type":"trusted_merchant"}
+
+
+##  paymethods API endpoint [/api/v2_1/paymethods/]
+
+### retrive paymethods and tokens [GET]
+
+This methods allows You to retrive paymethods which are enabled for pos, and also for merchants with token payments enabled it retrives user payments token. Token payments requires oAuth token with grant type trusted_merchant .
+
++ Request
+      + Headers
+
+            Authorization: Bearer {bearer_token}
+
++ Response 200
+        
+        {
+            "cardTokens": [ 
+            {
+            "cardExpirationYear": "2017",
+            "cardExpirationMonth": "12",
+            "cardNumberMasked": "411111******1111",
+            "cardScheme": "VS",  
+            "value": "TOKC_XATB7DF8ACXYTVQIPLWTVPFRKQE",
+            "brandImageUrl": "http://static.server/images/mobile/visa.png",
+            "preferred": true, 
+            "status": "ACTIVE" 
+            },
+            {
+            "cardExpirationYear": "2014",
+            "cardExpirationMonth": "12",
+            "cardNumberMasked": "424242******4242",
+            "cardScheme": "VS",
+            "value": "TOKC_XATB7DF8ACXYTVQIPLWTVPFRKQE",
+            "brandImageUrl": "http:///images/mobile/visa.png",
+            "preferred": false,
+            "status": "EXPIRED" 
+            }
+            ],
+            "pexTokens": [  
+            {
+            "accountNumber": "5311...7744",
+            "payType": "mtex",
+            "value": "TOKE_XPJ4UKJGHVRPMQPGB6X1JJQCUSS",
+            "name": "mbank - Rafał Śliwczyński",
+            "brandImageUrl": "http://static.server/images/mobile/logos/pex_mbank.png",
+            "preferred": false,
+            "status": "ACTIVE" 
+            }
+            ],
+            "payByLinks": [
+            {
+            "value": "c",
+            "name": "Płatność online kartą płatniczą",
+            "brandImageUrl": "http://static.server/images/mobile/logos/pbl_c.png",
+            "status": "ENABLED" 
+            },
+            {
+            "value": "o",
+            "name": "Pekao24Przelew",
+            "brandImageUrl": "http://static.server/images/mobile/logos/pbl_o.png",
+            "status": "DISABLED" 
+            },
+            {
+            "value": "ab",
+            "name": "Płacę z Alior Bankiem",
+            "brandImageUrl": "http://static.server/images/mobile/logos/pbl_ab.png",
+            "status": "TEMPORARY_DISABLED" 
+            }
+            ]
+            }
+
+
+##  order API endpoint [/api/v2_1/orders/]
+
+Order api, for creating, managing orders in system
+
+
+### get order details [GET/api/v2_1/orders/{order_id}]
+
+OrderRetrieveRequest message makes it possible to retrieve order details.
+Order data may be retrieved with the GET method.
+
++ Parameters
+    + order_id (text) - Id of the order
+
+
++ Request
+     + Headers
+
+            Authorization: Bearer 4cc24546-7e0e-47c9-a2d0-e5358e2640ac
+            
++ Response 200 (application/json)
+        
+        {
+          "orders": [
+            {
+              "orderId": "F3MXBWMG61151028GUEST000P01",
+              "orderCreateDate": "2015-10-28T09:24:45.318+01:00",
+              "notifyUrl": "http://server/payuint2/main/notify2",
+              "customerIp": "127.0.0.1",
+              "merchantPosId": "200003",
+              "description": "RTV market-rook",
+              "currencyCode": "PLN",
+              "totalAmount": "15000",
+              "status": "NEW",
+              "products": [
+                {
+                  "name": "Bezprzewodowa myszka do laptopa",
+                  "unitPrice": "15000",
+                  "quantity": "1"
+                }
+              ]
+            }
+          ],
+          "status": {
+            "statusCode": "SUCCESS",
+            "statusDesc": "Request processing successful"
+          }
+        }
+
+   
+
+### Create a new order [POST]
+
+To create a new order, use the POST method to send OrderCreateRequest to endpoint /api/v2_1/orders.
+Order message is used to trigger all payments flows: standard payment, transparent payment, transparent payment with credit card, token card payment, moto, recurring, and PEX token payment.
+You can see different types of order messages in example section. 
+
+ **Note:** prices should be specified in the lowest currency unit e.g. in grosz for PLN, so "1000" means 10 PLN.
+
++ Request standard order (application/json)
+
+    + Headers
+      
+            Authorization: Bearer {bearer_token}
+            
+    + Body
+
+            {
+                "notifyUrl": "https://your.eshop.com/notify",
+                "customerIp": "127.0.0.1",
+                "merchantPosId": "145227",
+                "description": "RTV market",
+                "currencyCode": "PLN",
+                "totalAmount": "21000",
+                "products": [
+                    {
+                    "name": "Bezprzewodowa myszka do laptopa",
+                    "unitPrice": "15000",
+                    "quantity": "1"
+                    },
+                    {
+                    "name": "Kabel HDMI",
+                    "unitPrice": "6000",
+                    "quantity": "1"
+                    }
+                ]
+            }
+            
++ Response 302 (application/json)
+
+    + Headers
+
+            Location: http://secure.payu.com/pl/standard/co/summary?sessionId=rRrraG6udd1WT6XdRUWccgi19ciGpu16&merchantPosId=200003&timeStamp=1446020685341&showLoginDialog=false&apiToken=872f15ed05fa6c1ca52885256ee66276d42e7dc954b62eac4082147
+
+    + Body
+
+            { 
+             "status":{ 
+             "statusCode":"SUCCESS",
+            },
+               "redirectUri":"http://secure.payu.com/pl/standard/co/summary?sessionId=rRrraG6udd1WT6XdRUWccgi19ciGpu16&merchantPosId=200003&timeStamp=1446020685341&showLoginDialog=false&apiToken=872f15ed05fa6c1ca52885256ee66276d42e7dc954b62eac4082147",
+               "orderId":"WZHF5FFDRJ140731GUEST000P01"
+            }
+
+        
++ Request transparent payment with given paymethod (application/json)
+    + Headers
+      
+            Authorization: Bearer {bearer_token}
+            
+    + Body
+
+            {
+                "notifyUrl": "https://your.eshop.com/notify",
+                "customerIp": "127.0.0.1",
+                "merchantPosId": "145227",
+                "description": "RTV market",
+                "currencyCode": "PLN",
+                "totalAmount": "21000",
+                "products": [
+                    {
+                    "name": "Bezprzewodowa myszka do laptopa",
+                    "unitPrice": "15000",
+                    "quantity": "1"
+                    },
+                    {
+                    "name": "Kabel HDMI",
+                    "unitPrice": "6000",
+                    "quantity": "1"
+                    }
+                ],
+                "payMethods":{
+                    "payMethod":{
+                        "type":"PBL","value":"t"
+                    }
+                }
+            }
+            
+
++ Response 302 (application/json)
+
+    + Headers
+
+            Location: https://www.platnosci.pl/np/newpayment.resume.action?paymentId=622937423&hash=02369b152bea5ef34d5c8cbce5e288fc&js=1
+
+    + Body
+
+            { 
+             "status":{ 
+             "statusCode":"SUCCESS",
+            },
+               "redirectUri":"https://www.platnosci.pl/np/newpayment.resume.action?paymentId=622937423&hash=02369b152bea5ef34d5c8cbce5e288fc&js=1",
+               "orderId":"WZHF5FFDRJ140731GUEST000P01",
+               "extOrderId":"{twój_identyfikator_zamówienia}",
+            }       
+
++ Request transparent card payment (application/json)
+    + Headers
+      
+            Authorization: Bearer {bearer_token}
+            
+    + Body
+
+            {
+                "notifyUrl": "https://your.eshop.com/notify",
+                "customerIp": "127.0.0.1",
+                "merchantPosId": "145227",
+                "description": "RTV market",
+                "currencyCode": "PLN",
+                "totalAmount": "21000",
+                "products": [
+                    {
+                    "name": "Bezprzewodowa myszka do laptopa",
+                    "unitPrice": "15000",
+                    "quantity": "1"
+                    },
+                    {
+                    "name": "Kabel HDMI",
+                    "unitPrice": "6000",
+                    "quantity": "1"
+                    }
+                ],
+                "payMethods":{
+                    "payMethod":{
+                        "type":"PBL","value":"c"
+                    }
+                }
+            }
+            
+
++ Response 302 (application/json)
+
+    + Headers
+
+            Location: https://secure.payu.com/front/card/redirect?event_hash=whrWRyvP3dSpB5eiDjyPhBxdt6M5gwLNje8p96wfWrvSTJBwjpXyu3LIbRbFGrEZ
+
+    + Body
+
+            {
+              "orderId": "58SNWDTQK1151123GUEST000P01",
+              "status": {
+                "statusCode": "SUCCESS"
+              },
+              "redirectUri": "https://secure.payu.com/front/card/redirect?event_hash=whrWRyvP3dSpB5eiDjyPhBxdt6M5gwLNje8p96wfWrvSTJBwjpXyu3LIbRbFGrEZ"
+            }
+    
++ Request token card payment (application/json)
+    + Headers
+      
+            Authorization: Bearer {bearer_token}
+            
+    + Body
+
+            {
+                "notifyUrl": "https://your.eshop.com/notify",
+                "customerIp": "127.0.0.1",
+                "merchantPosId": "145227",
+                "description": "RTV market",
+                "currencyCode": "PLN",
+                "totalAmount": "21000",
+                "products": [
+                    {
+                    "name": "Bezprzewodowa myszka do laptopa",
+                    "unitPrice": "15000",
+                    "quantity": "1"
+                    },
+                    {
+                    "name": "Kabel HDMI",
+                    "unitPrice": "6000",
+                    "quantity": "1"
+                    }
+                ],
+                "payMethods":{
+                    "payMethod":{
+                        "type":"CARD_TOKEN","value":"TOK_XATB7DF8ACXYTVQIPLWTVPFRKQE"
+                    }
+                }
+            }
+            
+
++ Response 200 (application/json)
+
+    + Headers
+
+
+    + Body
+
+            {
+              "orderId": "58SNWDTQK1151123GUEST000P01",
+              "status": {
+                "statusCode": "SUCCESS"
+              }
+            }
+
++ Request token PEX payment (application/json)
+    + Headers
+      
+            Authorization: Bearer {bearer_token}
+            
+    + Body
+
+            {
+                "notifyUrl": "https://your.eshop.com/notify",
+                "customerIp": "127.0.0.1",
+                "merchantPosId": "145227",
+                "description": "RTV market",
+                "currencyCode": "PLN",
+                "totalAmount": "21000",
+                "products": [
+                    {
+                    "name": "Bezprzewodowa myszka do laptopa",
+                    "unitPrice": "15000",
+                    "quantity": "1"
+                    },
+                    {
+                    "name": "Kabel HDMI",
+                    "unitPrice": "6000",
+                    "quantity": "1"
+                    }
+                ],
+                "payMethods":{
+                    "payMethod":{
+                        "type":"CARD_TOKEN","value":"TOKC_XATB7DF8ACXYTVQIPLWTVPFRKQE"
+                    }
+                }
+            }
+            
+
++ Response 200 (application/json)
+
+    + Headers
+
+            
+
+    + Body
+
+            {
+              "orderId": "58SNWDTQK1151123GUEST000P01",
+              "status": {
+                "statusCode": "SUCCESS"
+              }
+            }
+
++ Request moto payment, option: "moto": "MAIL" or "PHONE" (application/json)
+    + Headers
+      
+            Authorization: Bearer {bearer_token}
+            
+    + Body
+
+            {
+                "notifyUrl": "https://your.eshop.com/notify",
+                "customerIp": "127.0.0.1",
+                "merchantPosId": "145227",
+                "description": "RTV market",
+                "currencyCode": "PLN",
+                "totalAmount": "21000",
+                "moto": "MAIL",
+                "products": [
+                    {
+                    "name": "Bezprzewodowa myszka do laptopa",
+                    "unitPrice": "15000",
+                    "quantity": "1"
+                    },
+                    {
+                    "name": "Kabel HDMI",
+                    "unitPrice": "6000",
+                    "quantity": "1"
+                    }
+                ],
+                "payMethods":{
+                    "payMethod":{
+                        "type":"CARD_TOKEN","value":"TOK_XATB7DF8ACXYTVQIPLWTVPFRKQE"
+                    }
+                }
+            }
+            
+
++ Response 200 (application/json)
+
+    + Headers
+
+            
+
+    + Body
+
+            {
+              "orderId": "58SNWDTQK1151123GUEST000P01",
+              "status": {
+                "statusCode": "SUCCESS"
+              }
+            }
+
++ Request recurring payment, option: "recurring" (application/json)
+    + Headers
+      
+            Authorization: Bearer {bearer_token}
+            
+    + Body
+
+            {
+                "notifyUrl": "https://your.eshop.com/notify",
+                "customerIp": "127.0.0.1",
+                "merchantPosId": "145227",
+                "description": "RTV market",
+                "currencyCode": "PLN",
+                "totalAmount": "21000",
+                "recurring": "STANDARD",
+                "products": [
+                    {
+                    "name": "Bezprzewodowa myszka do laptopa",
+                    "unitPrice": "15000",
+                    "quantity": "1"
+                    },
+                    {
+                    "name": "Kabel HDMI",
+                    "unitPrice": "6000",
+                    "quantity": "1"
+                    }
+                ],
+                "payMethods":{
+                    "payMethod":{
+                        "type":"CARD_TOKEN","value":"TOK_XATB7DF8ACXYTVQIPLWTVPFRKQE"
+                    }
+                }
+            }
+            
+
++ Response 200 (application/json)
+
+    + Headers
+
+            
+
+    + Body
+
+            {
+              "orderId": "58SNWDTQK1151123GUEST000P01",
+              "status": {
+                "statusCode": "SUCCESS"
+              }
+            }
+
+### refund order [POST /api/v2_1/orders/orders/{order_id}/refund]
+
+Payments processed by the PayU system allow for refunds to the Buyer’s account.
+A refund request may be processed in two modes: full or partial. Partial refunds require that an amount is specified in the lowest unit of a given currency. The currency as such must be the same as in the initial order.
+
++ Parameters
+    + order_id (text) - Id of the order
+
++ Request (application/json)
+
+    
+  
+    + Headers
+      
+            Authorization: Bearer 4cc24546-7e0e-47c9-a2d0-e5358e2640ac
+            
+    + Body
+
+
+            {
+              "refund": {
+                "description": "Refund"
+              },
+              "orderId": "GPNG88VBW6151031GUEST000P01"
+            }
+            
++ Response 200 (application/json)
+ 
+        {
+          "orderId": "216VVQ3TMW151031GUEST000P01",
+          "refund": {
+            "refundId": "86821",
+            "extRefundId": "20151031133322",
+            "amount": "5500",
+            "currencyCode": "PLN",
+            "description": "Uznanie 86821 Refund",
+            "creationDateTime": "2015-10-31T13:33:22.396+01:00",
+            "status": "PENDING",
+            "statusDateTime": "2015-10-31T13:33:22.718+01:00"
+          },
+          "status": {
+            "statusCode": "SUCCESS",
+            "statusDesc": "Refund queued for processing"
+          }
+        }
+
+### cancel order [DELETE /api/v2_1/orders/{order_id}]
+
+An order processed by PayU may be cancelled (rejected) e.g. when a product or service is not delivered (cancel).
+A cancellation request always concerns the whole order. Following cancellation, all funds are returned to the Payer’s account.
+
++ Parameters
+    + order_id (text) - Id of the order
+        
++ Request
+  
+    + Headers
+      
+            Authorization: Bearer http://secure.payu.com/pl/standard/co/summary?sessionId=rRrraG6udd1WT6XdRUWccgi19ciGpu16&merchantPosId=200003&timeStamp=1446020685341&showLoginDialog=false&apiToken=872f15ed05fa6c1ca52885256ee66276d42e7dc954b62eac4082147
+            
+  
++ Response 200 (application/json)
+ 
+        {
+          "orderId": "216VVQ3TMW151031GUEST000P01",
+          "extOrderId": "18302811635634ae7d8f271",
+          "status": {
+            "statusCode": "SUCCESS",
+            "statusDesc": "Request processing successful"
+          }
+        }
+
+### update order [PUT /api/v2_1/orders/{order_id}/status]
+
+An order processed by PayU may take several statuses described in Notifications section. Currently, a status update is only used for the purpose of collecting a payment by the merchant (update).
+A status update request always concerns the whole order. An order status can be updated to COMPLETED(ended).
+
++ Parameters
+    + order_id (text) - Id of the order
+
++ Request
+  
+    + Headers
+      
+            Authorization: Bearer 4cc24546-7e0e-47c9-a2d0-e5358e2640ac
+
+    + Body
+        
+            {
+                "orderId": "216VVQ3TMW151031GUEST000P01",
+                "orderStatus": "COMPLETED"
+            }    
+            
+  
++ Response 200 (application/json)
+ 
+        {
+            "status": {
+                "statusCode": "SUCCESS",
+                "statusDesc": "Status was updated"
+            }
+        }  
+
+
+##  payouts API endpoint [/api/v2_1/payouts]
+
+Payout API allows merchants to perform payout on their shop. API allows to perform partial or full payout on bank account defined in Manager Panel
+
+### payout from shop [POST]
+
+begin payout process from given shop
+
++ Request
+
+    + Headers
+      
+            Authorization: Bearer 4cc24546-7e0e-47c9-a2d0-e5358e2640ac
+            Content-type: "application/json"
+
+    + Body
+        
+            {
+                "shopId":"100046",
+                "payout":{
+                    "amount":1100
+                }
+            }    
+            
++ Response 200
+
+            {
+              "payout": {
+                "payoutId": "2DVZMPMFPN140219GUEEE000P01AFAFA",
+                "status": "PENDING"
+              },
+              "status": {
+                "statusCode": "SUCCESS"
+              }
+            }
+            
+### retrive payout [GET /api/v2_1/payouts/{payout_id}]
+
+retrive payout status for given payout
+
+
++ Parameters
+    + payout_id (text) - id of payout to be retrived
+
++ Request
+
+    + Headers
+      
+            Authorization: Bearer 4cc24546-7e0e-47c9-a2d0-e5358e2640ac
+
+            
++ Response 200
+
+            {
+              "payout": {
+                "payoutId": "2DVZMPMFPN140219GUEEE000P01AFAFA",
+                "amount": "1100";
+                "status": "WAITING"
+              },
+              "status": {
+                "statusCode": "SUCCESS"
+              }
+            }
+            
+
+##  token API endpoint [/api/v2_1/tokens/]
+
+### delete token [DELETE /api/v2_1/tokens/{token_id}]
+
+Delete given token
+<script src="http://app1.sugester.com/7623/widget.js" type="text/javascript"></script>
+
++ Parameters
+    + token_id (text) - token to be deleted
++ Request
+
+    + Header
+    
+            Authorization: Bearer 4cc24546-7e0e-47c9-a2d0-e5358e2640ac
+
+
++ Response 204
+        
