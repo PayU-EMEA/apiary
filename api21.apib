@@ -5,7 +5,8 @@ HOST: https://secure.payu.com/
 
 This document contains information about **REST API 2.1** for the PayU payment system.
 
-**Basic information**
+## Basic information
+
 
 Click on the <a href="http://static.payu.com/sites/terms/files/przewodnik_po_elementach_strony_eng.pdf"> link </a> to find out how to start cooperating with PayU.<br/>
 Full documentation can be find on <a href="http://developers.payu.com/pl/restapi.html" >developers.payu.com</a>
@@ -18,17 +19,17 @@ In this paragraph You can find most popular payments flows.
 
  **standard payment flow**<br/>
         1. <a href=" #reference/api-endpoints/oauth-api-endpoint/get-access-token">obtain access token </a> (client_credentials or trusted_merchant) <br/>
-        2. <a href=" #reference/api-endpoints/order-api-endpoint/create-a-new-order">send order create request</a> using recived access token <br/>
+        2. <a href=" #reference/api-endpoints/order-api-endpoint/create-a-new-order">send order create request</a> using received access token <br/>
         3. redirect client to received link<br/>
-        
+
  **token payment flow**<br/>
  before using token method payments tokens must be stored using procedure described in spearate documentation.<br/>
         1. <a href="#reference/api-endpoints/oauth-api-endpoint/get-access-token">obtain access token </a> **(only trusted_merchant)** <br/>
-        2. <a href="#reference/api-endpoints/paymethods-api-endpoint/retrive-paymethods-and-tokens">obtain user payment tokens</a> using recived access token <br/>
-        3. <a href="#reference/api-endpoints/order-api-endpoint/create-a-new-order">send order create request</a> using recived access token and payment token <br/>
+        2. <a href="#reference/api-endpoints/paymethods-api-endpoint/retrive-paymethods-and-tokens">obtain user payment tokens</a> using received access token <br/>
+        3. <a href="#reference/api-endpoints/order-api-endpoint/create-a-new-order">send order create request</a> using received access token and payment token <br/>
         4. (optional) redirect client to received link (e.g. in strong autehtication in PEX and 3DS in card flow)<br/>
-        
-    
+
+
 # Group API Endpoints
 
 ##  oauth API endpoint [/pl/standard/user/oauth/authorize]
@@ -37,41 +38,53 @@ In this paragraph You can find most popular payments flows.
 ### get access token [POST]
 
 The client authenticates by  OAuth standard by obtaining a token, which is used in further communication with PayU servers.
-Authorization data can be found in client panel. There are two grant types client_credentials for standard integration and trusted_merchant for use with token payments.
+Authorization data can be found in client panel. There are two grant types *client_credentials* for standard integration and *trusted_merchant* for use with token payments.
+
 
 + Request client_credentials grant type
      + Headers
-            
+
             Content-Type: application/x-www-form-urlencoded
-        
-     + Body    
+
+     + Body
 
             grant_type=client_credentials&client_id=145227&client_secret=12f071174cb7eb79d4aac5bc2f07563f
 
 + Response 200
-        
-        {"access_token":"4cc24546-7e0e-47c9-a2d0-e5358e2640ac","token_type":"bearer","refresh_token":"6e265a18-d33e-46d7-ae00-853adebbacfd","expires_in":43199,"grant_type":"clients_credentials"}
+
+        {
+            "access_token":"4cc24546-7e0e-47c9-a2d0-e5358e2640ac",
+            "token_type":"bearer",
+            "refresh_token":"6e265a18-d33e-46d7-ae00-853adebbacfd",
+            "expires_in":43199,"grant_type":"clients_credentials"
+        }
 
 
 + Request trusted merchant grant type token
      + Headers
-            
+
             Content-Type: application/x-www-form-urlencoded
-        
-     + Body    
+
+     + Body
 
             grant_type=trusted_merchant&client_id=145227&client_secret=12f071174cb7eb79d4aac5bc2f07563f&email=testaccount1%40devil.allegro.pl&ext_customer_id=extCustId6667
 
 + Response 200
-        
-        {"access_token":"4cc24546-7e0e-47c9-a2d0-e5358e2640ac","token_type":"bearer","refresh_token":"6e265a18-d33e-46d7-ae00-853adebbacfd","expires_in":43199,"grant_type":"trusted_merchant"}
+
+        {
+            "access_token":"4cc24546-7e0e-47c9-a2d0-e5358e2640ac",
+            "token_type":"bearer",
+            "refresh_token":"6e265a18-d33e-46d7-ae00-853adebbacfd",
+            "expires_in":43199,
+            "grant_type":"trusted_merchant"
+        }
 
 
 ##  paymethods API endpoint [/api/v2_1/paymethods/]
 
-### retrive paymethods and tokens [GET]
+### retrieve paymethods and tokens [GET]
 
-This methods allows You to retrive paymethods which are enabled for pos, and also for merchants with token payments enabled it retrives user payments token. Token payments requires oAuth token with grant type trusted_merchant .
+This methods allows to retrieve paymethods which are enabled for pos. For merchants with token payments enabled it also retrieves user payments tokens. Token payments requires OAuth token with grant type *trusted_merchant*.
 
 + Request
       + Headers
@@ -79,18 +92,18 @@ This methods allows You to retrive paymethods which are enabled for pos, and als
             Authorization: Bearer {bearer_token}
 
 + Response 200
-        
+
         {
-            "cardTokens": [ 
+            "cardTokens": [
             {
             "cardExpirationYear": "2017",
             "cardExpirationMonth": "12",
             "cardNumberMasked": "411111******1111",
-            "cardScheme": "VS",  
+            "cardScheme": "VS",
             "value": "TOKC_XATB7DF8ACXYTVQIPLWTVPFRKQE",
             "brandImageUrl": "http://static.server/images/mobile/visa.png",
-            "preferred": true, 
-            "status": "ACTIVE" 
+            "preferred": true,
+            "status": "ACTIVE"
             },
             {
             "cardExpirationYear": "2014",
@@ -100,10 +113,10 @@ This methods allows You to retrive paymethods which are enabled for pos, and als
             "value": "TOKC_XATB7DF8ACXYTVQIPLWTVPFRKQE",
             "brandImageUrl": "http:///images/mobile/visa.png",
             "preferred": false,
-            "status": "EXPIRED" 
+            "status": "EXPIRED"
             }
             ],
-            "pexTokens": [  
+            "pexTokens": [
             {
             "accountNumber": "5311...7744",
             "payType": "mtex",
@@ -111,7 +124,7 @@ This methods allows You to retrive paymethods which are enabled for pos, and als
             "name": "mbank - Rafał Śliwczyński",
             "brandImageUrl": "http://static.server/images/mobile/logos/pex_mbank.png",
             "preferred": false,
-            "status": "ACTIVE" 
+            "status": "ACTIVE"
             }
             ],
             "payByLinks": [
@@ -119,19 +132,19 @@ This methods allows You to retrive paymethods which are enabled for pos, and als
             "value": "c",
             "name": "Płatność online kartą płatniczą",
             "brandImageUrl": "http://static.server/images/mobile/logos/pbl_c.png",
-            "status": "ENABLED" 
+            "status": "ENABLED"
             },
             {
             "value": "o",
             "name": "Pekao24Przelew",
             "brandImageUrl": "http://static.server/images/mobile/logos/pbl_o.png",
-            "status": "DISABLED" 
+            "status": "DISABLED"
             },
             {
             "value": "ab",
             "name": "Płacę z Alior Bankiem",
             "brandImageUrl": "http://static.server/images/mobile/logos/pbl_ab.png",
-            "status": "TEMPORARY_DISABLED" 
+            "status": "TEMPORARY_DISABLED"
             }
             ]
             }
@@ -139,13 +152,13 @@ This methods allows You to retrive paymethods which are enabled for pos, and als
 
 ##  order API endpoint [/api/v2_1/orders/]
 
-Order api, for creating, managing orders in system
+Order API, for creating and managing orders in the system.
 
 
 ### get order details [GET/api/v2_1/orders/{order_id}]
 
-OrderRetrieveRequest message makes it possible to retrieve order details.
-Order data may be retrieved with the GET method.
+Retrieves order details.
+
 
 + Parameters
     + order_id (text) - Id of the order
@@ -155,9 +168,9 @@ Order data may be retrieved with the GET method.
      + Headers
 
             Authorization: Bearer 4cc24546-7e0e-47c9-a2d0-e5358e2640ac
-            
+
 + Response 200 (application/json)
-        
+
         {
           "orders": [
             {
@@ -172,7 +185,7 @@ Order data may be retrieved with the GET method.
               "status": "NEW",
               "products": [
                 {
-                  "name": "Bezprzewodowa myszka do laptopa",
+                  "name": "Wireless mouse",
                   "unitPrice": "15000",
                   "quantity": "1"
                 }
@@ -185,11 +198,10 @@ Order data may be retrieved with the GET method.
           }
         }
 
-   
+
 
 ### Create a new order [POST]
 
-To create a new order, use the POST method to send OrderCreateRequest to endpoint /api/v2_1/orders.
 OrderCreate message is used to trigger all payments flows: <br/>
  -standard payment,<br/>
  -transparent payment,<br/>
@@ -198,16 +210,16 @@ OrderCreate message is used to trigger all payments flows: <br/>
  -moto,<br/>
  -recurring,<br/>
  -and PEX token payment.<br/>
-You can see different types of order messages in example section. 
+You can see different types of order messages in example section.
 
  **Note:** prices should be specified in the lowest currency unit e.g. in grosz for PLN, so "1000" means 10 PLN.
 
 + Request standard order (application/json)
 
     + Headers
-      
+
             Authorization: Bearer {bearer_token}
-            
+
     + Body
 
             {
@@ -219,18 +231,18 @@ You can see different types of order messages in example section.
                 "totalAmount": "21000",
                 "products": [
                     {
-                    "name": "Bezprzewodowa myszka do laptopa",
+                    "name": "Wireless mouse",
                     "unitPrice": "15000",
                     "quantity": "1"
                     },
                     {
-                    "name": "Kabel HDMI",
+                    "name": "HDMI cable",
                     "unitPrice": "6000",
                     "quantity": "1"
                     }
                 ]
             }
-            
+
 + Response 302 (application/json)
 
     + Headers
@@ -239,20 +251,20 @@ You can see different types of order messages in example section.
 
     + Body
 
-            { 
-             "status":{ 
+            {
+             "status":{
              "statusCode":"SUCCESS",
             },
                "redirectUri":"http://secure.payu.com/pl/standard/co/summary?sessionId=rRrraG6udd1WT6XdRUWccgi19ciGpu16&merchantPosId=200003&timeStamp=1446020685341&showLoginDialog=false&apiToken=872f15ed05fa6c1ca52885256ee66276d42e7dc954b62eac4082147",
                "orderId":"WZHF5FFDRJ140731GUEST000P01"
             }
 
-        
+
 + Request transparent payment with given paymethod (application/json)
     + Headers
-      
+
             Authorization: Bearer {bearer_token}
-            
+
     + Body
 
             {
@@ -262,25 +274,27 @@ You can see different types of order messages in example section.
                 "description": "RTV market",
                 "currencyCode": "PLN",
                 "totalAmount": "21000",
+                "extOrderId" : "12345",
                 "products": [
                     {
-                    "name": "Bezprzewodowa myszka do laptopa",
+                    "name": "Wireless mouse",
                     "unitPrice": "15000",
                     "quantity": "1"
                     },
                     {
-                    "name": "Kabel HDMI",
+                    "name": "HDMI cable",
                     "unitPrice": "6000",
                     "quantity": "1"
                     }
                 ],
                 "payMethods":{
                     "payMethod":{
-                        "type":"PBL","value":"t"
+                        "type":"PBL",
+                        "value":"t"
                     }
                 }
             }
-            
+
 
 + Response 302 (application/json)
 
@@ -290,20 +304,21 @@ You can see different types of order messages in example section.
 
     + Body
 
-            { 
-             "status":{ 
+            {
+             "status":{
              "statusCode":"SUCCESS",
             },
                "redirectUri":"https://www.platnosci.pl/np/newpayment.resume.action?paymentId=622937423&hash=02369b152bea5ef34d5c8cbce5e288fc&js=1",
                "orderId":"WZHF5FFDRJ140731GUEST000P01",
-               "extOrderId":"{twój_identyfikator_zamówienia}",
-            }       
+               "extOrderId":"12345",
+            }
 
 + Request transparent card payment (application/json)
+
     + Headers
-      
+
             Authorization: Bearer {bearer_token}
-            
+
     + Body
 
             {
@@ -315,23 +330,24 @@ You can see different types of order messages in example section.
                 "totalAmount": "21000",
                 "products": [
                     {
-                    "name": "Bezprzewodowa myszka do laptopa",
+                    "name": "Wireless mouse",
                     "unitPrice": "15000",
                     "quantity": "1"
                     },
                     {
-                    "name": "Kabel HDMI",
+                    "name": "HDMI cable",
                     "unitPrice": "6000",
                     "quantity": "1"
                     }
                 ],
                 "payMethods":{
                     "payMethod":{
-                        "type":"PBL","value":"c"
+                        "type":"PBL",
+                        "value":"c"
                     }
                 }
             }
-            
+
 
 + Response 302 (application/json)
 
@@ -348,12 +364,13 @@ You can see different types of order messages in example section.
               },
               "redirectUri": "https://secure.payu.com/front/card/redirect?event_hash=whrWRyvP3dSpB5eiDjyPhBxdt6M5gwLNje8p96wfWrvSTJBwjpXyu3LIbRbFGrEZ"
             }
-    
+
 + Request token card payment (application/json)
+
     + Headers
-      
+
             Authorization: Bearer {bearer_token}
-            
+
     + Body
 
             {
@@ -365,25 +382,26 @@ You can see different types of order messages in example section.
                 "totalAmount": "21000",
                 "products": [
                     {
-                    "name": "Bezprzewodowa myszka do laptopa",
+                    "name": "Wireless mouse",
                     "unitPrice": "15000",
                     "quantity": "1"
                     },
                     {
-                    "name": "Kabel HDMI",
+                    "name": "HDMI cable",
                     "unitPrice": "6000",
                     "quantity": "1"
                     }
                 ],
                 "payMethods":{
                     "payMethod":{
-                        "type":"CARD_TOKEN","value":"TOK_XATB7DF8ACXYTVQIPLWTVPFRKQE"
+                        "type":"CARD_TOKEN",
+                        "value":"TOK_XATB7DF8ACXYTVQIPLWTVPFRKQE"
                     }
                 }
             }
-            
 
-+ Response 200 (application/json) 
+
++ Response 200 (application/json)
 
     + Headers
 
@@ -396,11 +414,11 @@ You can see different types of order messages in example section.
                 "statusCode": "SUCCESS"
               }
             }
-            
-+ Response 302 (application/json) 
+
++ Response 302 (application/json)
 
     + Body
-    
+
             {
                 "orderId": "TDM3G4R57D151102su620vahP01",
                 "payMethods": {
@@ -423,9 +441,9 @@ You can see different types of order messages in example section.
 
 + Request token PEX payment (application/json)
     + Headers
-      
+
             Authorization: Bearer {bearer_token}
-            
+
     + Body
 
             {
@@ -436,30 +454,29 @@ You can see different types of order messages in example section.
                 "currencyCode": "PLN",
                 "totalAmount": "21000",
                 "products": [
-                    {
-                    "name": "Bezprzewodowa myszka do laptopa",
-                    "unitPrice": "15000",
-                    "quantity": "1"
-                    },
-                    {
-                    "name": "Kabel HDMI",
-                    "unitPrice": "6000",
-                    "quantity": "1"
-                    }
+                   {
+                   "name": "Wireless mouse",
+                   "unitPrice": "15000",
+                   "quantity": "1"
+                   },
+                   {
+                   "name": "HDMI cable",
+                   "unitPrice": "6000",
+                   "quantity": "1"
+                   }
                 ],
                 "payMethods":{
                     "payMethod":{
-                        "type":"CARD_TOKEN","value":"TOKC_XATB7DF8ACXYTVQIPLWTVPFRKQE"
+                        "type":"CARD_TOKEN",
+                        "value":"TOKC_XATB7DF8ACXYTVQIPLWTVPFRKQE"
                     }
                 }
             }
-            
+
 
 + Response 200 (application/json)
 
     + Headers
-
-            
 
     + Body
 
@@ -471,10 +488,11 @@ You can see different types of order messages in example section.
             }
 
 + Request moto payment, option: "moto": "MAIL" or "PHONE" (application/json)
+
     + Headers
-      
+
             Authorization: Bearer {bearer_token}
-            
+
     + Body
 
             {
@@ -487,29 +505,28 @@ You can see different types of order messages in example section.
                 "moto": "MAIL",
                 "products": [
                     {
-                    "name": "Bezprzewodowa myszka do laptopa",
+                    "name": "Wireless mouse",
                     "unitPrice": "15000",
                     "quantity": "1"
                     },
                     {
-                    "name": "Kabel HDMI",
+                    "name": "HDMI cable",
                     "unitPrice": "6000",
                     "quantity": "1"
                     }
                 ],
                 "payMethods":{
                     "payMethod":{
-                        "type":"CARD_TOKEN","value":"TOK_XATB7DF8ACXYTVQIPLWTVPFRKQE"
+                        "type":"CARD_TOKEN",
+                        "value":"TOK_XATB7DF8ACXYTVQIPLWTVPFRKQE"
                     }
                 }
             }
-            
+
 
 + Response 200 (application/json)
 
     + Headers
-
-            
 
     + Body
 
@@ -521,10 +538,11 @@ You can see different types of order messages in example section.
             }
 
 + Request recurring payment, option: "recurring" (application/json)
+
     + Headers
-      
+
             Authorization: Bearer {bearer_token}
-            
+
     + Body
 
             {
@@ -537,29 +555,30 @@ You can see different types of order messages in example section.
                 "recurring": "STANDARD",
                 "products": [
                     {
-                    "name": "Bezprzewodowa myszka do laptopa",
+                    "name": "Wireless mouse",
                     "unitPrice": "15000",
                     "quantity": "1"
                     },
                     {
-                    "name": "Kabel HDMI",
+                    "name": "HDMI cable",
                     "unitPrice": "6000",
                     "quantity": "1"
                     }
                 ],
                 "payMethods":{
                     "payMethod":{
-                        "type":"CARD_TOKEN","value":"TOK_XATB7DF8ACXYTVQIPLWTVPFRKQE"
+                        "type":"CARD_TOKEN",
+                        "value":"TOK_XATB7DF8ACXYTVQIPLWTVPFRKQE"
                     }
                 }
             }
-            
+
 
 + Response 200 (application/json)
 
     + Headers
 
-            
+
 
     + Body
 
@@ -572,38 +591,42 @@ You can see different types of order messages in example section.
 
 ### refund order [POST /api/v2_1/orders/orders/{order_id}/refund]
 
-Payments processed by the PayU system allow for refunds to the Buyer’s account.
+Payments processed by the PayU system allow for refunds to the buyer’s account.
 A refund request may be processed in two modes: full or partial. Partial refunds require that an amount is specified in the lowest unit of a given currency. The currency as such must be the same as in the initial order.
 
 + Parameters
     + order_id (text) - Id of the order
+    + ext_refund_id (text) - Id of the refund in shop's system
 
 + Request (application/json)
 
-    
-  
+
+
     + Headers
-      
+
             Authorization: Bearer 4cc24546-7e0e-47c9-a2d0-e5358e2640ac
-            
+
     + Body
 
 
             {
               "refund": {
-                "description": "Refund"
+                "description": "Refund",
+                "extRefundId": "20151031133322",
+                "amount": "100"
+
               },
               "orderId": "GPNG88VBW6151031GUEST000P01"
             }
-            
+
 + Response 200 (application/json)
- 
+
         {
-          "orderId": "216VVQ3TMW151031GUEST000P01",
+          "orderId": "GPNG88VBW6151031GUEST000P01",
           "refund": {
             "refundId": "86821",
             "extRefundId": "20151031133322",
-            "amount": "5500",
+            "amount": "100",
             "currencyCode": "PLN",
             "description": "Uznanie 86821 Refund",
             "creationDateTime": "2015-10-31T13:33:22.396+01:00",
@@ -623,16 +646,16 @@ A cancellation request always concerns the whole order. Following cancellation, 
 
 + Parameters
     + order_id (text) - Id of the order
-        
+
 + Request
-  
+
     + Headers
-      
+
             Authorization: Bearer http://secure.payu.com/pl/standard/co/summary?sessionId=rRrraG6udd1WT6XdRUWccgi19ciGpu16&merchantPosId=200003&timeStamp=1446020685341&showLoginDialog=false&apiToken=872f15ed05fa6c1ca52885256ee66276d42e7dc954b62eac4082147
-            
-  
+
+
 + Response 200 (application/json)
- 
+
         {
           "orderId": "216VVQ3TMW151031GUEST000P01",
           "extOrderId": "18302811635634ae7d8f271",
@@ -644,34 +667,35 @@ A cancellation request always concerns the whole order. Following cancellation, 
 
 ### update order [PUT /api/v2_1/orders/{order_id}/status]
 
-An order processed by PayU may take several statuses described in Notifications section. Currently, a status update is only used for the purpose of collecting a payment by the merchant (update).
+An order processed by PayU may take several statuses described in Notifications section.
+Currently, a status update is only used for the purpose of collecting a payment by the merchant (update).
 A status update request always concerns the whole order. An order status can be updated to COMPLETED(ended).
 
 + Parameters
     + order_id (text) - Id of the order
 
 + Request
-  
+
     + Headers
-      
+
             Authorization: Bearer 4cc24546-7e0e-47c9-a2d0-e5358e2640ac
 
     + Body
-        
+
             {
                 "orderId": "216VVQ3TMW151031GUEST000P01",
                 "orderStatus": "COMPLETED"
-            }    
-            
-  
+            }
+
+
 + Response 200 (application/json)
- 
+
         {
             "status": {
                 "statusCode": "SUCCESS",
                 "statusDesc": "Status was updated"
             }
-        }  
+        }
 
 
 ##  payouts API endpoint [/api/v2_1/payouts]
@@ -680,24 +704,24 @@ Payout API allows merchants to perform payout on their shop. API allows to perfo
 
 ### payout from shop [POST]
 
-begin payout process for given shop
+Begin payout process for given shop.
 
 + Request
 
     + Headers
-      
+
             Authorization: Bearer 4cc24546-7e0e-47c9-a2d0-e5358e2640ac
             Content-type: "application/json"
 
     + Body
-        
+
             {
                 "shopId":"100046",
                 "payout":{
                     "amount":1100
                 }
-            }    
-            
+            }
+
 + Response 200
 
             {
@@ -709,21 +733,21 @@ begin payout process for given shop
                 "statusCode": "SUCCESS"
               }
             }
-            
-### retrive payout [GET /api/v2_1/payouts/{payout_id}]
 
-retrive payout status for given payout
+### retrieve payout [GET /api/v2_1/payouts/{payout_id}]
+
+Retrieve payout status for given payout.
 
 + Parameters
-    + payout_id (text) - id of payout to be retrived
+    + payout_id (text) - id of payout to be retrieved
 
 + Request
 
     + Headers
-      
+
             Authorization: Bearer 4cc24546-7e0e-47c9-a2d0-e5358e2640ac
 
-            
+
 + Response 200
 
             {
@@ -736,23 +760,22 @@ retrive payout status for given payout
                 "statusCode": "SUCCESS"
               }
             }
-            
+
 
 ##  token API endpoint [/api/v2_1/tokens/]
 
 ### delete token [DELETE /api/v2_1/tokens/{token_id}]
 
 Delete given token.
-If token is no longer needed it can be deleted using delete request. Deleted token will no longer be usable. 
+If token is no longer needed it can be deleted using delete request. Deleted token will no longer be usable.
 
 + Parameters
     + token_id (text) - token to be deleted
 + Request
 
     + Header
-    
+
             Authorization: Bearer 4cc24546-7e0e-47c9-a2d0-e5358e2640ac
 
 
 + Response 204
-        
