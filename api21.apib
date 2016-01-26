@@ -53,7 +53,7 @@ Authorization data can be found in client panel. There are two grant types *clie
 + Response 200
 
         {
-            "access_token":"4cc24546-7e0e-47c9-a2d0-e5358e2640ac",
+            "access_token":"3e5cac39-7e38-4139-8fd6-30adc06a61bd",
             "token_type":"bearer",
             "refresh_token":"6e265a18-d33e-46d7-ae00-853adebbacfd",
             "expires_in":43199,"grant_type":"clients_credentials"
@@ -72,7 +72,7 @@ Authorization data can be found in client panel. There are two grant types *clie
 + Response 200
 
         {
-            "access_token":"4cc24546-7e0e-47c9-a2d0-e5358e2640ac",
+            "access_token":"3e5cac39-7e38-4139-8fd6-30adc06a61bd",
             "token_type":"bearer",
             "refresh_token":"6e265a18-d33e-46d7-ae00-853adebbacfd",
             "expires_in":43199,
@@ -89,7 +89,7 @@ This methods allows to retrieve paymethods which are enabled for pos. For mercha
 + Request
       + Headers
 
-            Authorization: Bearer {bearer_token}
+            Authorization: Bearer 3e5cac39-7e38-4139-8fd6-30adc06a61bd
 
 + Response 200
 
@@ -167,7 +167,7 @@ Retrieves order details.
 + Request
      + Headers
 
-            Authorization: Bearer 4cc24546-7e0e-47c9-a2d0-e5358e2640ac
+            Authorization: Bearer 3e5cac39-7e38-4139-8fd6-30adc06a61bd
 
 + Response 200 (application/json)
 
@@ -218,7 +218,7 @@ You can see different types of order messages in example section.
 
     + Headers
 
-            Authorization: Bearer {bearer_token}
+            Authorization: Bearer 3e5cac39-7e38-4139-8fd6-30adc06a61bd
 
     + Body
 
@@ -263,7 +263,7 @@ You can see different types of order messages in example section.
 + Request transparent payment with given paymethod (application/json)
     + Headers
 
-            Authorization: Bearer {bearer_token}
+            Authorization: Bearer 3e5cac39-7e38-4139-8fd6-30adc06a61bd
 
     + Body
 
@@ -317,7 +317,7 @@ You can see different types of order messages in example section.
 
     + Headers
 
-            Authorization: Bearer {bearer_token}
+            Authorization: Bearer 3e5cac39-7e38-4139-8fd6-30adc06a61bd
 
     + Body
 
@@ -369,7 +369,7 @@ You can see different types of order messages in example section.
 
     + Headers
 
-            Authorization: Bearer {bearer_token}
+            Authorization: Bearer 3e5cac39-7e38-4139-8fd6-30adc06a61bd
 
     + Body
 
@@ -442,7 +442,7 @@ You can see different types of order messages in example section.
 + Request token PEX payment (application/json)
     + Headers
 
-            Authorization: Bearer {bearer_token}
+            Authorization: Bearer 3e5cac39-7e38-4139-8fd6-30adc06a61bd
 
     + Body
 
@@ -491,7 +491,7 @@ You can see different types of order messages in example section.
 
     + Headers
 
-            Authorization: Bearer {bearer_token}
+            Authorization: Bearer 3e5cac39-7e38-4139-8fd6-30adc06a61bd
 
     + Body
 
@@ -541,7 +541,7 @@ You can see different types of order messages in example section.
 
     + Headers
 
-            Authorization: Bearer {bearer_token}
+            Authorization: Bearer 3e5cac39-7e38-4139-8fd6-30adc06a61bd
 
     + Body
 
@@ -596,7 +596,7 @@ A refund request may be processed in two modes: full or partial. Partial refunds
 
 + Parameters
     + order_id (text) - Id of the order
-    + ext_refund_id (text) - Id of the refund in shop's system
+ 
 
 + Request (application/json)
 
@@ -604,7 +604,7 @@ A refund request may be processed in two modes: full or partial. Partial refunds
 
     + Headers
 
-            Authorization: Bearer 4cc24546-7e0e-47c9-a2d0-e5358e2640ac
+            Authorization: Bearer 3e5cac39-7e38-4139-8fd6-30adc06a61bd
 
     + Body
 
@@ -612,9 +612,46 @@ A refund request may be processed in two modes: full or partial. Partial refunds
             {
               "refund": {
                 "description": "Refund",
-                "extRefundId": "20151031133322",
                 "amount": "100"
 
+              },
+              "orderId": "GPNG88VBW6151031GUEST000P01"
+            }
+
++ Response 200 (application/json)
+
+        {
+          "orderId": "GPNG88VBW6151031GUEST000P01",
+          "refund": {
+            "refundId": "86821",
+            "extRefundId": "20151031133322",
+            "amount": "100",
+            "currencyCode": "PLN",
+            "description": "Uznanie 86821 Refund",
+            "creationDateTime": "2015-10-31T13:33:22.396+01:00",
+            "status": "PENDING",
+            "statusDateTime": "2015-10-31T13:33:22.718+01:00"
+          },
+          "status": {
+            "statusCode": "SUCCESS",
+            "statusDesc": "Refund queued for processing"
+          }
+        }
+        
++ Request full refund (application/json)
+
+
+
+    + Headers
+
+            Authorization: Bearer 3e5cac39-7e38-4139-8fd6-30adc06a61bd
+
+    + Body
+
+
+            {
+              "refund": {
+                "description": "Refund"
               },
               "orderId": "GPNG88VBW6151031GUEST000P01"
             }
@@ -678,7 +715,7 @@ A status update request always concerns the whole order. An order status can be 
 
     + Headers
 
-            Authorization: Bearer 4cc24546-7e0e-47c9-a2d0-e5358e2640ac
+            Authorization: Bearer 3e5cac39-7e38-4139-8fd6-30adc06a61bd
 
     + Body
 
@@ -710,13 +747,13 @@ Begin payout process for given shop.
 
     + Headers
 
-            Authorization: Bearer 4cc24546-7e0e-47c9-a2d0-e5358e2640ac
-            Content-type: "application/json"
+            Authorization: Bearer 3e5cac39-7e38-4139-8fd6-30adc06a61bd
+            Content-type: application/json
 
     + Body
 
             {
-                "shopId":"100046",
+                "shopId":"122553",
                 "payout":{
                     "amount":1100
                 }
@@ -745,7 +782,7 @@ Retrieve payout status for given payout.
 
     + Headers
 
-            Authorization: Bearer 4cc24546-7e0e-47c9-a2d0-e5358e2640ac
+            Authorization: Bearer 3e5cac39-7e38-4139-8fd6-30adc06a61bd
 
 
 + Response 200
@@ -775,7 +812,7 @@ If token is no longer needed it can be deleted using delete request. Deleted tok
 
     + Header
 
-            Authorization: Bearer 4cc24546-7e0e-47c9-a2d0-e5358e2640ac
+            Authorization: Bearer 3e5cac39-7e38-4139-8fd6-30adc06a61bd
 
 
 + Response 204
